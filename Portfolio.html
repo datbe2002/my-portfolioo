@@ -1,0 +1,2644 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Truong Tan Dat — Web App Developer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #060d1f;
+      --paper: #EEF1FF;
+      --ink: #EEF1FF;
+      --dim: rgba(200, 210, 255, .45);
+      --rule: rgba(200, 210, 255, .14);
+      --accent: #6B8CFF;
+      --serif: "Instrument Serif", "Times New Roman", serif;
+      --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      cursor: none;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(80, 100, 255, .28) 0%, rgba(40, 60, 180, .12) 40%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 70% 70%, rgba(100, 80, 255, .10) 0%, transparent 60%);
+    }
+
+    .wrap,
+    nav,
+    section,
+    footer {
+      position: relative;
+      z-index: 1;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    ::selection {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    /* ── CURSOR ── */
+    .cur-dot,
+    .cur-ring {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+    }
+
+    .cur-dot {
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      transition: width .15s, height .15s;
+    }
+
+    .cur-ring {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--accent);
+      opacity: .6;
+      transition: width .4s cubic-bezier(.22, 1, .36, 1), height .4s cubic-bezier(.22, 1, .36, 1), opacity .3s;
+    }
+
+    .cur-ring.hover {
+      width: 80px;
+      height: 80px;
+      opacity: .3;
+    }
+
+    .cur-ring.press {
+      width: 18px;
+      height: 18px;
+      opacity: 1;
+    }
+
+    @media(hover:none) {
+      body {
+        cursor: auto;
+      }
+
+      .cur-dot,
+      .cur-ring {
+        display: none;
+      }
+    }
+
+    /* ── CURTAIN (nav transitions) ── */
+    .curtain {
+      position: fixed;
+      inset: 0;
+      background: #0a1430;
+      z-index: 9998;
+      transform: translateY(100%);
+      pointer-events: none;
+    }
+
+    .curtain.show {
+      transform: translateY(0);
+      transition: transform .55s cubic-bezier(.77, 0, .175, 1);
+    }
+
+    .curtain.hide {
+      transform: translateY(-100%);
+      transition: transform .65s cubic-bezier(.77, 0, .175, 1);
+    }
+
+    .curtain-inner {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+    }
+
+    .curtain-inner span {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: var(--paper);
+    }
+
+    /* ── INTRO LOADER ── */
+    .intro {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: #040814;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .intro::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(107, 140, 255, .15) 0%, transparent 60%);
+    }
+
+    .intro.gone {
+      transform: translateY(-100%);
+      transition: transform .9s cubic-bezier(.77, 0, .175, 1);
+    }
+
+    .intro-stage {
+      position: relative;
+      text-align: center;
+      padding: 0 32px;
+    }
+
+    .intro-meta {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      color: rgba(200, 210, 255, .5);
+      margin-bottom: 36px;
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      animation: introFade .6s .1s forwards;
+    }
+
+    .intro-meta .dot {
+      width: 5px;
+      height: 5px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .intro-name {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(56px, 9vw, 140px);
+      line-height: .95;
+      letter-spacing: -.03em;
+      color: var(--paper);
+    }
+
+    .intro-name em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .intro-name .word {
+      display: inline-block;
+      overflow: hidden;
+      vertical-align: bottom;
+    }
+
+    .intro-name .word>span {
+      display: inline-block;
+      transform: translateY(110%);
+      animation: introRise .9s cubic-bezier(.22, 1, .36, 1) forwards;
+    }
+
+    .intro-name .w1>span {
+      animation-delay: .15s;
+    }
+
+    .intro-name .w2>span {
+      animation-delay: .28s;
+    }
+
+    .intro-name .w3>span {
+      animation-delay: .41s;
+    }
+
+    .intro-bar {
+      width: 0;
+      height: 1px;
+      background: var(--accent);
+      margin: 32px auto 0;
+      animation: introBar 1.2s .6s cubic-bezier(.77, 0, .175, 1) forwards;
+    }
+
+    .intro-foot {
+      margin-top: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: min(640px, 86vw);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: rgba(200, 210, 255, .5);
+      opacity: 0;
+      animation: introFade .6s 1.1s forwards;
+    }
+
+    .intro-foot b {
+      color: var(--paper);
+      font-weight: 700;
+    }
+
+    .intro-counter {
+      font-variant-numeric: tabular-nums;
+    }
+
+    @keyframes introFade {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes introRise {
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes introBar {
+      to {
+        width: min(640px, 86vw);
+      }
+    }
+
+    /* ── LAYOUT ── */
+    .wrap {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    .rule {
+      height: 1px;
+      background: var(--rule);
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--rule);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(6, 13, 31, .85);
+    }
+
+    .nav-inner {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 16px 40px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .nav-brand {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+    }
+
+    .nav-brand b {
+      font-weight: 700;
+      color: var(--paper);
+    }
+
+    .nav-brand span {
+      color: var(--dim);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      justify-content: center;
+    }
+
+    .nav-links a {
+      color: var(--dim);
+      transition: color .2s;
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -4px;
+      height: 1px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .3s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .nav-links a:hover {
+      color: var(--paper);
+    }
+
+    .nav-links a:hover::after {
+      transform: scaleX(1);
+    }
+
+    .nav-meta {
+      display: flex;
+      gap: 20px;
+      justify-content: flex-end;
+      align-items: center;
+      color: var(--dim);
+    }
+
+    .nav-meta .avail {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-meta .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .3
+      }
+    }
+
+    .nav-meta b {
+      color: var(--paper);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 160px 0 80px;
+      position: relative;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    .hero-eyebrow .accent {
+      color: var(--accent);
+    }
+
+    .hero-eyebrow .tick {
+      width: 28px;
+      height: 1px;
+      background: var(--rule);
+      display: inline-block;
+    }
+
+    h1.hero-title {
+      font-family: var(--serif);
+      font-weight: 400;
+      font-size: clamp(72px, 11.5vw, 210px);
+      line-height: .88;
+      letter-spacing: -.03em;
+    }
+
+    h1.hero-title em {
+      font-style: italic;
+    }
+
+    h1.hero-title .outline {
+      -webkit-text-stroke: 1.5px var(--paper);
+      color: transparent;
+    }
+
+    h1.hero-title .green {
+      color: var(--accent);
+    }
+
+    .hero-bottom {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 40px;
+      margin-top: 64px;
+      padding-top: 32px;
+      border-top: 1px solid var(--rule);
+    }
+
+    .hero-cell .label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 12px;
+    }
+
+    .hero-cell p {
+      font-size: 15px;
+      line-height: 1.6;
+      color: rgba(240, 238, 232, .75);
+    }
+
+    .hero-cell .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-weight: 700;
+      padding: 14px 28px;
+      margin-top: 8px;
+      transition: background .2s, transform .2s;
+    }
+
+    .hero-cell .cta-btn:hover {
+      background: #fff;
+      transform: translateY(-2px);
+    }
+
+    .hero-cell .cta-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+      margin-left: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--dim);
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 2px;
+      transition: color .2s, border-color .2s;
+    }
+
+    .hero-cell .cta-ghost:hover {
+      color: var(--paper);
+      border-color: var(--paper);
+    }
+
+    /* ── MARQUEE ── */
+    .marquee {
+      overflow: hidden;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      margin-top: 80px;
+    }
+
+    .marquee-track {
+      display: flex;
+      gap: 0;
+      white-space: nowrap;
+      padding: 20px 0;
+      animation: marquee 35s linear infinite;
+      font-family: var(--serif);
+      font-size: clamp(36px, 4vw, 64px);
+      font-style: italic;
+      letter-spacing: -.02em;
+      color: rgba(240, 238, 232, .12);
+    }
+
+    .marquee-track .item {
+      display: inline-flex;
+      align-items: center;
+      gap: 32px;
+      padding: 0 32px;
+    }
+
+    .marquee-track .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    @keyframes marquee {
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* ── SECTION HEADER ── */
+    .sec-head {
+      display: grid;
+      grid-template-columns: 120px 1fr auto;
+      gap: 24px;
+      align-items: end;
+      padding: 48px 0 28px;
+    }
+
+    .sec-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      padding-top: 8px;
+    }
+
+    .sec-title {
+      font-family: var(--serif);
+      font-size: clamp(40px, 5.5vw, 90px);
+      line-height: .95;
+      letter-spacing: -.025em;
+    }
+
+    .sec-title em {
+      font-style: italic;
+    }
+
+    .sec-aside {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-align: right;
+    }
+
+    /* ── SERVICES ── */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      border-top: 1px solid var(--rule);
+    }
+
+    .service-card {
+      padding: 36px 32px 40px;
+      border-right: 1px solid var(--rule);
+      position: relative;
+      overflow: hidden;
+      transition: background .35s;
+    }
+
+    .service-card:last-child {
+      border-right: 0;
+    }
+
+    .service-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: var(--accent);
+      transform: translateY(100%);
+      transition: transform .5s cubic-bezier(.77, 0, .175, 1);
+      z-index: 0;
+    }
+
+    .service-card:hover::before {
+      transform: translateY(0);
+    }
+
+    .service-card>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .service-card:hover {
+      color: var(--bg);
+    }
+
+    .service-card:hover .svc-num,
+    .service-card:hover .svc-desc,
+    .service-card:hover .svc-tags span {
+      color: var(--bg);
+      opacity: .7;
+    }
+
+    .service-card:hover .svc-name {
+      color: var(--bg);
+    }
+
+    .svc-num {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 40px;
+    }
+
+    .svc-icon {
+      font-size: 32px;
+      margin-bottom: 20px;
+      line-height: 1;
+    }
+
+    .svc-name {
+      font-family: var(--serif);
+      font-size: clamp(28px, 2.8vw, 44px);
+      letter-spacing: -.02em;
+      line-height: 1;
+      margin-bottom: 16px;
+    }
+
+    .svc-name em {
+      font-style: italic;
+    }
+
+    .svc-desc {
+      font-size: 14px;
+      line-height: 1.65;
+      color: rgba(240, 238, 232, .6);
+      margin-bottom: 28px;
+    }
+
+    .svc-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .svc-tags span {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      border: 1px solid var(--rule);
+      padding: 4px 8px;
+      color: var(--dim);
+    }
+
+    /* ── STATS ── */
+    .stats-section {
+      padding: 80px 0 0;
+      position: relative;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .stat-cell {
+      padding: 48px 32px;
+      border-right: 1px solid var(--rule);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-cell:last-child {
+      border-right: 0;
+    }
+
+    .stat-cell::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--accent);
+      transform: scaleY(0);
+      transform-origin: bottom;
+      transition: transform .6s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .stat-cell.in::before {
+      transform: scaleY(1);
+    }
+
+    .stat-num {
+      font-family: var(--serif);
+      font-size: clamp(72px, 10vw, 160px);
+      line-height: .9;
+      letter-spacing: -.04em;
+      color: var(--paper);
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .stat-num em {
+      font-style: italic;
+      color: var(--accent);
+      font-size: .55em;
+    }
+
+    .stat-num .plus {
+      color: var(--accent);
+      font-size: .6em;
+      font-style: italic;
+    }
+
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-top: 20px;
+    }
+
+    .stat-sub {
+      font-size: 14px;
+      line-height: 1.6;
+      color: rgba(240, 238, 232, .55);
+      margin-top: 14px;
+      max-width: 320px;
+    }
+
+    .stats-banner {
+      padding: 24px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--rule);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .stats-banner .flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--paper);
+    }
+
+    .stats-banner .flag::before {
+      content: "";
+      width: 18px;
+      height: 12px;
+      display: inline-block;
+      background: linear-gradient(to bottom, #DA251D 50%, #DA251D 50%);
+      position: relative;
+    }
+
+    .vn-flag {
+      display: inline-block;
+      width: 20px;
+      height: 14px;
+      background: #DA251D;
+      position: relative;
+      vertical-align: middle;
+    }
+
+    .vn-flag::after {
+      content: "★";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: #FFCD00;
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    /* ── WORK ── */
+    .work-list {
+      border-top: 1px solid var(--rule);
+    }
+
+    .work-item {
+      display: grid;
+      grid-template-columns: 60px 1fr 280px 120px 100px;
+      gap: 24px;
+      align-items: center;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--rule);
+      position: relative;
+      overflow: hidden;
+      transition: color .3s;
+    }
+
+    .work-item::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(240, 238, 232, .03);
+      transform: translateX(-100%);
+      transition: transform .45s cubic-bezier(.22, 1, .36, 1);
+      z-index: 0;
+    }
+
+    .work-item:hover::before {
+      transform: translateX(0);
+    }
+
+    .work-item>* {
+      position: relative;
+      z-index: 1;
+    }
+
+    .work-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .14em;
+      color: var(--dim);
+    }
+
+    .work-name {
+      font-family: var(--serif);
+      font-size: clamp(28px, 3vw, 52px);
+      letter-spacing: -.02em;
+      line-height: 1;
+    }
+
+    .work-name em {
+      font-style: italic;
+    }
+
+    .work-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .work-tags span {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      border: 1px solid var(--rule);
+      padding: 3px 8px;
+      color: var(--dim);
+    }
+
+    .work-year {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .14em;
+      color: var(--dim);
+    }
+
+    .work-arrow {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-align: right;
+      color: var(--accent);
+    }
+
+    /* Work hover preview */
+    .work-preview {
+      position: absolute;
+      right: 140px;
+      top: 50%;
+      transform: translateY(-50%) scale(.92);
+      width: 320px;
+      height: 200px;
+      background: #111;
+      border: 1px solid var(--rule);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 10;
+      overflow: hidden;
+      transition: opacity .3s, transform .4s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .work-item:hover .work-preview {
+      opacity: 1;
+      transform: translateY(-50%) scale(1);
+    }
+
+    .wp-bar {
+      height: 28px;
+      border-bottom: 1px solid rgba(240, 238, 232, .1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+    }
+
+    .wp-bar .d {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(240, 238, 232, .15);
+    }
+
+    .wp-body {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .wp-block {
+      height: 18px;
+      background: rgba(240, 238, 232, .08);
+      border-radius: 1px;
+    }
+
+    .wp-block.tall {
+      height: 60px;
+    }
+
+    .wp-block.accent {
+      background: rgba(107, 140, 255, .2);
+    }
+
+    /* ── ARCHIVE (horizontal scroll cards) ── */
+    .archive-section {
+      padding: 80px 0 0;
+    }
+
+    .archive-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      padding: 18px 0;
+      margin-bottom: 0;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .archive-bar .ab-count b {
+      color: var(--paper);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .archive-bar .ab-hint {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .archive-bar .ab-hint .arrows {
+      display: inline-flex;
+      gap: 4px;
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    .archive-bar .ab-ctrl {
+      display: flex;
+      gap: 8px;
+    }
+
+    .archive-bar button {
+      background: transparent;
+      border: 1px solid var(--rule);
+      color: var(--paper);
+      width: 38px;
+      height: 38px;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+
+    .archive-bar button:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--bg);
+    }
+
+    .archive-rail-wrap {
+      position: relative;
+      margin: 0 -40px;
+      padding: 32px 40px 16px;
+      overflow: hidden;
+    }
+
+    .archive-rail {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+      padding-bottom: 24px;
+    }
+
+    .archive-rail::-webkit-scrollbar {
+      display: none;
+    }
+
+    .a-card {
+      flex: 0 0 360px;
+      scroll-snap-align: start;
+      background: rgba(255, 255, 255, .02);
+      border: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      transition: border-color .25s, transform .35s cubic-bezier(.22, 1, .36, 1), background .25s;
+      text-decoration: none;
+      color: inherit;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .a-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-6px);
+      background: rgba(107, 140, 255, .04);
+    }
+
+    .a-card.empty {
+      opacity: .55;
+    }
+
+    .a-card.empty:hover {
+      transform: none;
+      border-color: var(--rule);
+      background: rgba(255, 255, 255, .02);
+    }
+
+    .a-card-img {
+      aspect-ratio: 16/10;
+      background: #0a1230;
+      overflow: hidden;
+      position: relative;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .a-card-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top;
+      display: block;
+      transition: transform .6s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .a-card:hover .a-card-img img {
+      transform: scale(1.04);
+    }
+
+    .a-card-img .placeholder {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(107, 140, 255, .08), rgba(107, 140, 255, .02));
+      font-family: var(--serif);
+      font-size: 64px;
+      font-style: italic;
+      color: rgba(238, 241, 255, .15);
+      letter-spacing: -.04em;
+    }
+
+    .a-card-img .placeholder::before {
+      content: "";
+      position: absolute;
+      inset: 20px;
+      border: 1px dashed rgba(238, 241, 255, .08);
+    }
+
+    .a-card-num {
+      position: absolute;
+      top: 14px;
+      left: 16px;
+      z-index: 2;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .2em;
+      color: rgba(238, 241, 255, .7);
+      background: rgba(6, 13, 31, .7);
+      backdrop-filter: blur(6px);
+      padding: 5px 9px;
+    }
+
+    .a-card-tag {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      z-index: 2;
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      background: #DA251D;
+      color: #FFCD00;
+      padding: 5px 8px;
+      line-height: 1;
+      font-weight: 700;
+    }
+
+    .a-card-body {
+      padding: 22px 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    .a-card-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .a-card-meta .type {
+      border: 1px solid var(--rule);
+      padding: 3px 8px;
+    }
+
+    .a-card-name {
+      font-family: var(--serif);
+      font-size: 28px;
+      line-height: 1.05;
+      letter-spacing: -.015em;
+      color: var(--paper);
+    }
+
+    .a-card-name em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .a-card-client {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(240, 238, 232, .6);
+    }
+
+    .a-card-foot {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .a-card-foot .visit {
+      color: var(--accent);
+    }
+
+    .a-card-foot .visit.dim {
+      color: var(--dim);
+    }
+
+    /* progress bar under rail */
+    .archive-progress {
+      height: 1px;
+      background: var(--rule);
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .archive-progress::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: -1px;
+      height: 3px;
+      background: var(--accent);
+      width: var(--prog, 8%);
+      transition: width .15s linear;
+    }
+
+    /* ── LOGO WALL ── */
+    .logos-section {
+      padding: 80px 0 0;
+    }
+
+    .logos-strip {
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      overflow: hidden;
+    }
+
+    .logos-track {
+      display: flex;
+      gap: 0;
+      align-items: center;
+      animation: logosScroll 40s linear infinite;
+    }
+
+    .logos-track:hover {
+      animation-play-state: paused;
+    }
+
+    .logo-item {
+      flex-shrink: 0;
+      padding: 36px 48px;
+      min-width: 240px;
+      border-right: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 28px;
+      font-style: italic;
+      letter-spacing: -.01em;
+      color: rgba(238, 241, 255, .45);
+      transition: color .25s, background .25s;
+      white-space: nowrap;
+    }
+
+    .logo-item:hover {
+      color: var(--paper);
+      background: rgba(107, 140, 255, .05);
+    }
+
+    .logo-item .sans {
+      font-family: var(--sans);
+      font-style: normal;
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+
+    .logo-item .mono {
+      font-family: var(--mono);
+      font-style: normal;
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    @keyframes logosScroll {
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* ── STACK ── */
+    .stack-section {
+      padding: 40px 0 80px;
+    }
+
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0;
+      border-top: 1px solid var(--rule);
+      border-left: 1px solid var(--rule);
+    }
+
+    .stack-item {
+      padding: 28px 24px;
+      border-right: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: background .25s;
+    }
+
+    .stack-item:hover {
+      background: rgba(107, 140, 255, .08);
+    }
+
+    .stack-item .s-icon {
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .stack-item .s-name {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--paper);
+      font-weight: 700;
+    }
+
+    .stack-item .s-cat {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    /* ── FAQ ── */
+    .faq-list {
+      border-top: 1px solid var(--rule);
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .faq-q {
+      display: grid;
+      grid-template-columns: 60px 1fr 40px;
+      gap: 24px;
+      align-items: center;
+      padding: 28px 0;
+      cursor: pointer;
+    }
+
+    .faq-q .q-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .14em;
+      color: var(--dim);
+    }
+
+    .faq-q .q-text {
+      font-family: var(--serif);
+      font-size: clamp(22px, 2.2vw, 36px);
+      letter-spacing: -.01em;
+      line-height: 1;
+    }
+
+    .faq-q .q-text em {
+      font-style: italic;
+    }
+
+    .faq-q .q-arrow {
+      font-family: var(--mono);
+      font-size: 18px;
+      color: var(--accent);
+      text-align: right;
+      transition: transform .35s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .faq-item.open .q-arrow {
+      transform: rotate(45deg);
+    }
+
+    .faq-a {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 24px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .45s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .faq-item.open .faq-a {
+      max-height: 300px;
+    }
+
+    .faq-a .a-body {
+      padding-bottom: 28px;
+      font-size: 16px;
+      line-height: 1.7;
+      color: rgba(240, 238, 232, .7);
+    }
+
+    /* ── CONTACT ── */
+    .contact {
+      background: var(--bg);
+      border-top: 1px solid var(--rule);
+      padding: 80px 0 0;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: end;
+    }
+
+    .contact-left .kicker {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-bottom: 20px;
+    }
+
+    .contact-left h2 {
+      font-family: var(--serif);
+      font-size: clamp(56px, 8vw, 140px);
+      font-weight: 400;
+      line-height: .9;
+      letter-spacing: -.03em;
+    }
+
+    .contact-left h2 em {
+      font-style: italic;
+    }
+
+    .contact-left h2 .outline {
+      -webkit-text-stroke: 1.5px var(--paper);
+      color: transparent;
+    }
+
+    .contact-left .mail {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 36px;
+      font-family: var(--serif);
+      font-size: clamp(20px, 2vw, 32px);
+      font-style: italic;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 4px;
+      transition: color .2s, border-color .2s;
+    }
+
+    .contact-left .mail:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .contact-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .cf {
+      border-bottom: 1px solid var(--rule);
+      padding: 20px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cf .cf-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    .cf .cf-val {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--paper);
+    }
+
+    .cf .cf-val a {
+      transition: color .2s;
+    }
+
+    .cf .cf-val a:hover {
+      color: var(--accent);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 0;
+      border-top: 1px solid var(--rule);
+      margin-top: 60px;
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--dim);
+    }
+
+    /* ── REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .8s cubic-bezier(.22, 1, .36, 1), transform .8s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    .line-clip {
+      overflow: hidden;
+      display: block;
+    }
+
+    .line-clip>span {
+      display: block;
+      transform: translateY(100%);
+      transition: transform 1s cubic-bezier(.22, 1, .36, 1);
+    }
+
+    .line-clip.in>span {
+      transform: none;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1100px) {
+      .services-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .service-card:nth-child(2) {
+        border-right: 0;
+      }
+
+      .stack-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .work-item {
+        grid-template-columns: 40px 1fr 100px 80px;
+      }
+
+      .work-tags {
+        display: none;
+      }
+
+      .work-preview {
+        display: none;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-inner {
+        grid-template-columns: 1fr auto;
+      }
+
+      .nav-meta {
+        display: none;
+      }
+    }
+
+    @media(max-width:700px) {
+      .wrap {
+        padding: 0 20px;
+      }
+
+      .nav-inner {
+        padding: 14px 20px;
+      }
+
+      .services-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stack-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .hero-bottom {
+        grid-template-columns: 1fr;
+      }
+
+      .sec-head {
+        grid-template-columns: 60px 1fr;
+      }
+
+      .sec-aside {
+        display: none;
+      }
+
+      .work-item {
+        grid-template-columns: 40px 1fr 60px;
+      }
+
+      .faq-q {
+        grid-template-columns: 40px 1fr 32px;
+      }
+    }
+  </style>
+</head>
+<template id="__bundler_thumbnail" data-bg-color="#040814">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="g" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#6B8CFF" stop-opacity=".25" />
+        <stop offset="100%" stop-color="#040814" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+    <rect width="1200" height="800" fill="#040814" />
+    <ellipse cx="600" cy="400" rx="500" ry="300" fill="url(#g)" />
+    <text x="600" y="420" font-family="Times New Roman, serif" font-size="180" fill="#EEF1FF" text-anchor="middle"
+      font-style="italic">TTD<tspan fill="#6B8CFF">.</tspan></text>
+    <line x1="350" y1="500" x2="850" y2="500" stroke="#6B8CFF" stroke-width="2" />
+    <text x="600" y="560" font-family="monospace" font-size="22" fill="#6B8CFF" text-anchor="middle"
+      letter-spacing="8">PORTFOLIO · VOL. 02</text>
+  </svg>
+</template>
+
+<body>
+
+  <!-- Cursor -->
+  <div class="cur-ring" id="cRing"></div>
+  <div class="cur-dot" id="cDot"></div>
+
+  <!-- Intro Loader -->
+  <div class="intro" id="intro">
+    <div class="intro-stage">
+      <div class="intro-meta">
+        <span>Portfolio</span>
+        <span class="dot"></span>
+        <span>Vol. 02</span>
+        <span class="dot"></span>
+        <span>Web App Developer</span>
+      </div>
+      <h1 class="intro-name">
+        <span class="word w1"><span>Truong</span></span>
+        <span class="word w2"><span>Tan</span></span>
+        <span class="word w3"><span><em>Dat.</em></span></span>
+      </h1>
+      <div class="intro-bar"></div>
+      <div class="intro-foot">
+        <span>HCMC · VN</span>
+        <span class="intro-counter" id="introCount">000</span>
+        <span><b>Loading</b></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Curtain -->
+  <div class="curtain" id="curtain">
+    <div class="curtain-inner"><span>Truong Tan Dat · 2026</span></div>
+  </div>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <div class="nav-inner">
+      <div class="nav-brand">
+        <b>TTD</b>
+        <span>Web App Developer · Freelance</span>
+      </div>
+      <div class="nav-links">
+        <a href="#services">Services</a>
+        <a href="#work">Work</a>
+        <a href="#archive">Archive</a>
+        <a href="#stack">Stack</a>
+        <a href="#faq">FAQ</a>
+        <a href="#contact">Contact</a>
+      </div>
+      <div class="nav-meta">
+        <span class="avail"><span class="dot"></span>Available now</span>
+        <span><b id="clock">--:--:--</b> ICT</span>
+        <span>HCMC · VN</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero" data-screen-label="01 Hero">
+    <div class="wrap">
+      <div class="hero-eyebrow">
+        <span class="accent">[&nbsp;Available for projects&nbsp;]</span>
+        <span class="tick"></span>
+        <span>Freelance · 2026</span>
+        <span class="tick"></span>
+        <span>Web Apps · SaaS · E-commerce</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="line-clip"><span>I build</span></span>
+        <span class="line-clip"><span><em>web apps</em></span></span>
+        <span class="line-clip"><span>that <span class="green">ship</span><span class="outline">.</span></span></span>
+      </h1>
+
+      <div class="hero-bottom">
+        <div class="hero-cell">
+          <div class="label">[ Who I am ]</div>
+          <p>Truong Tan Dat — full-stack web developer based in Ho Chi Minh City. I help startups and businesses turn
+            ideas into production-ready web applications.</p>
+        </div>
+        <div class="hero-cell">
+          <div class="label">[ What I build ]</div>
+          <p>Landing pages, SaaS MVPs, dashboards, e-commerce platforms. From concept to deployment — React, Next.js,
+            Node.js, and everything in between.</p>
+        </div>
+        <div class="hero-cell">
+          <div class="label">[ Start here ]</div>
+          <a class="cta-btn" href="#work">View my work →</a>
+          <a class="cta-ghost" href="#contact">Let's talk</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="marquee">
+      <div class="marquee-track">
+        <span class="item">Next.js <span class="dot"></span></span>
+        <span class="item">React <span class="dot"></span></span>
+        <span class="item">TypeScript <span class="dot"></span></span>
+        <span class="item">Node.js <span class="dot"></span></span>
+        <span class="item">Tailwind CSS <span class="dot"></span></span>
+        <span class="item">PostgreSQL <span class="dot"></span></span>
+        <span class="item">Supabase <span class="dot"></span></span>
+        <span class="item">Docker <span class="dot"></span></span>
+        <span class="item">REST API <span class="dot"></span></span>
+        <span class="item">GraphQL <span class="dot"></span></span>
+        <span class="item">Next.js <span class="dot"></span></span>
+        <span class="item">React <span class="dot"></span></span>
+        <span class="item">TypeScript <span class="dot"></span></span>
+        <span class="item">Node.js <span class="dot"></span></span>
+        <span class="item">Tailwind CSS <span class="dot"></span></span>
+        <span class="item">PostgreSQL <span class="dot"></span></span>
+        <span class="item">Supabase <span class="dot"></span></span>
+        <span class="item">Docker <span class="dot"></span></span>
+        <span class="item">REST API <span class="dot"></span></span>
+        <span class="item">GraphQL <span class="dot"></span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STATS ── -->
+  <section class="stats-section" data-screen-label="02 Stats">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-num">[ 01 / By the numbers ]</div>
+        <div class="sec-title">Trusted by <em>Vietnamese</em> brands.</div>
+        <div class="sec-aside">2023 — 2026</div>
+      </div>
+
+      <div class="stats-banner">
+        <span class="flag"><span class="vn-flag"></span> Made in Vietnam · For Vietnamese businesses</span>
+        <span>Hanoi · Da Nang · HCMC · Can Tho · Binh Duong</span>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-cell reveal">
+          <div class="stat-num"><span data-count="13">0</span><span class="plus">+</span></div>
+          <div class="stat-label">[ Projects shipped ]</div>
+          <p class="stat-sub">From landing pages to full e-commerce platforms — production-ready, deployed, and running.
+          </p>
+        </div>
+        <div class="stat-cell reveal" style="transition-delay:.1s">
+          <div class="stat-num"><span data-count="11">0</span><span class="plus">+</span></div>
+          <div class="stat-label">[ Vietnamese brands ]</div>
+          <p class="stat-sub">Local SMEs, startups and established companies — from F&B to manufacturing and lifestyle.
+          </p>
+        </div>
+        <div class="stat-cell reveal" style="transition-delay:.2s">
+          <div class="stat-num"><span data-count="5">0</span></div>
+          <div class="stat-label">[ Cities served ]</div>
+          <p class="stat-sub">Clients across Vietnam — plus international projects from US, EU and APAC working remote.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SERVICES ── -->
+  <section id="services" style="padding:80px 0 0" data-screen-label="03 Services">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-num">[ 02 / Services ]</div>
+        <div class="sec-title">What I <em>do</em>.</div>
+        <div class="sec-aside">Four core offerings</div>
+      </div>
+    </div>
+    <div class="rule"></div>
+    <div class="wrap">
+      <div class="services-grid">
+
+        <div class="service-card reveal">
+          <div class="svc-num">01</div>
+          <div class="svc-icon">◻</div>
+          <div class="svc-name">Landing <em>Pages</em></div>
+          <p class="svc-desc">High-converting, blazing-fast marketing sites. Built with Next.js and Tailwind — optimised
+            for Core Web Vitals and SEO from day one.</p>
+          <div class="svc-tags">
+            <span>Next.js</span><span>Tailwind</span><span>SEO</span><span>Animation</span>
+          </div>
+        </div>
+
+        <div class="service-card reveal" style="transition-delay:.1s">
+          <div class="svc-num">02</div>
+          <div class="svc-icon">◈</div>
+          <div class="svc-name">Shopify <em>Store</em></div>
+          <p class="svc-desc">Custom Shopify storefronts, theme development and app integrations. From Liquid templates
+            to headless Shopify with Next.js — built to convert.</p>
+          <div class="svc-tags">
+            <span>Shopify</span><span>Liquid</span><span>Next.js</span><span>Headless</span>
+          </div>
+        </div>
+
+        <div class="service-card reveal" style="transition-delay:.2s">
+          <div class="svc-num">03</div>
+          <div class="svc-icon">◇</div>
+          <div class="svc-name">Admin <em>Dashboard</em></div>
+          <p class="svc-desc">Data-rich internal tools and analytics dashboards. Complex tables, real-time updates,
+            role-based access — designed to be used all day, every day.</p>
+          <div class="svc-tags">
+            <span>React</span><span>TypeScript</span><span>REST/GraphQL</span><span>Charts</span>
+          </div>
+        </div>
+
+        <div class="service-card reveal" style="transition-delay:.3s">
+          <div class="svc-num">04</div>
+          <div class="svc-icon">◉</div>
+          <div class="svc-name">WordPress <em>Sites</em></div>
+          <p class="svc-desc">Fast, SEO-optimised WordPress sites and WooCommerce stores. Custom themes, plugin
+            development, and performance tuning for real-world traffic.</p>
+          <div class="svc-tags">
+            <span>WordPress</span><span>WooCommerce</span><span>PHP</span><span>ACF</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── WORK ── -->
+  <section id="work" style="padding:80px 0 0" data-screen-label="04 Work">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-num">[ 03 / Featured work ]</div>
+        <div class="sec-title"><em>Featured</em> projects.</div>
+        <div class="sec-aside">Three highlights · More in archive ↓</div>
+      </div>
+
+      <div class="work-list">
+
+        <a class="work-item reveal" href="https://legendary.com.vn" target="_blank">
+          <div class="work-num">№ 01</div>
+          <div class="work-name"><em>Legendary</em> Chocolate</div>
+          <div class="work-tags"><span>WordPress</span><span>WooCommerce</span><span>E-commerce</span></div>
+          <div class="work-year">2025</div>
+          <div class="work-arrow">Visit ↗</div>
+          <div class="work-preview">
+            <img src="img/legendary.png" alt="Legendary"
+              style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;" />
+          </div>
+        </a>
+
+        <a class="work-item reveal" href="https://nextgenadventure.vn/" target="_blank" style="transition-delay:.08s">
+          <div class="work-num">№ 02</div>
+          <div class="work-name">NextGen <em>Adventure</em></div>
+          <div class="work-tags"><span>WordPress</span><span>Landing Page</span><span>Responsive</span></div>
+          <div class="work-year">2025</div>
+          <div class="work-arrow">Visit ↗</div>
+          <div class="work-preview">
+            <img src="img/nextgen.png" alt="NextGen Adventure"
+              style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;" />
+          </div>
+        </a>
+
+        <a class="work-item reveal" href="https://sanakyvietnhat.vn/" target="_blank" style="transition-delay:.16s">
+          <div class="work-num">№ 03</div>
+          <div class="work-name">Sanaky <em>Việt Nhật</em></div>
+          <div class="work-tags"><span>WordPress</span><span>WooCommerce</span><span>E-commerce</span></div>
+          <div class="work-year">2024</div>
+          <div class="work-arrow">Visit ↗</div>
+          <div class="work-preview">
+            <img src="img/sanaky.png" alt="Sanaky"
+              style="width:100%;height:100%;object-fit:cover;object-position:top;display:block;" />
+          </div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── ARCHIVE ── -->
+  <section id="archive" class="archive-section" data-screen-label="05 Archive">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-num">[ 04 / Archive ]</div>
+        <div class="sec-title">All <em>projects</em>.</div>
+        <div class="sec-aside">13 shipped · Click to visit</div>
+      </div>
+
+      <div class="archive-bar">
+        <div class="ab-count"><b>13</b> projects · 11 Vietnamese · 2 international</div>
+        <div class="ab-hint">
+          <span>Drag · scroll · arrow keys</span>
+          <span class="arrows">← →</span>
+        </div>
+        <div class="ab-ctrl">
+          <button id="archPrev" aria-label="Previous">←</button>
+          <button id="archNext" aria-label="Next">→</button>
+        </div>
+      </div>
+
+      <div class="archive-rail-wrap">
+        <div class="archive-rail" id="archRail">
+
+          <a class="a-card" href="https://legendary.com.vn" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 01</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/legendary.png" alt="Legendary Co." />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">E-commerce</span>
+                <span>2025</span>
+              </div>
+              <div class="a-card-name"><em>Legendary</em> Chocolate</div>
+              <div class="a-card-client">Legendary Co.</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://nextgenadventure.vn/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 02</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/nextgen.png" alt="NextGen Travel" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">Landing</span>
+                <span>2025</span>
+              </div>
+              <div class="a-card-name">NextGen <em>Adventure</em></div>
+              <div class="a-card-client">NextGen Travel</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://sanakyvietnhat.vn/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 03</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/sanaky.png" alt="Sanaky VN" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">E-commerce</span>
+                <span>2024</span>
+              </div>
+              <div class="a-card-name">Sanaky <em>Việt Nhật</em></div>
+              <div class="a-card-client">Sanaky VN</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://shop.daotaotinhoc.vn/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 04</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/daotaotinhoc.png" alt="DaoTaoTinHoc.vn" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">E-commerce</span>
+                <span>2025</span>
+              </div>
+              <div class="a-card-name"><em>Đào Tạo</em> Tin Học</div>
+              <div class="a-card-client">DaoTaoTinHoc.vn</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://nhathungpharma.vn/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 05</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/nhathungpharma.png" alt="Nhất Hùng Pharma" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">E-commerce</span>
+                <span>2025</span>
+              </div>
+              <div class="a-card-name">Nhất Hùng <em>Pharma</em></div>
+              <div class="a-card-client">Nhất Hùng Pharma</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://vnetmedia.vn/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 06</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/vnetmedia.png" alt="VNet Media" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">Corporate</span>
+                <span>2024</span>
+              </div>
+              <div class="a-card-name"><em>VNet</em> Media</div>
+              <div class="a-card-client">VNet Media</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://www.rlpatents.com/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 07</div>
+              <div class="a-card-tag" style="background:#1a3a8a;color:#fff;">INT</div>
+              <img src="img/rlpatents.png" alt="RL Patents" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">Corporate</span>
+                <span>2024</span>
+              </div>
+              <div class="a-card-name"><em>RL</em> Patents</div>
+              <div class="a-card-client">RL Patents</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://egan.vn/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 08</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/egan.png" alt="EGAN Vietnam" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">E-commerce</span>
+                <span>2024</span>
+              </div>
+              <div class="a-card-name"><em>EGAN</em></div>
+              <div class="a-card-client">EGAN Vietnam</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://tnd-vn.com/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 09</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/tnd.png" alt="TND Interior" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">Corporate</span>
+                <span>2024</span>
+              </div>
+              <div class="a-card-name"><em>TND</em> Interior</div>
+              <div class="a-card-client">TND Interior</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://catchup.vn/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 10</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/catchup.png" alt="Cat Chup Fashion" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">Blog / Fashion</span>
+                <span>2024</span>
+              </div>
+              <div class="a-card-name"><em>Cat Chup</em></div>
+              <div class="a-card-client">Cat Chup Fashion</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://sailaza.vn/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 11</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/sailaza.png" alt="Sailaza" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">Landing</span>
+                <span>2023</span>
+              </div>
+              <div class="a-card-name"><em>Sailaza</em></div>
+              <div class="a-card-client">Sailaza</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://planetroll.com.au/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 12</div>
+              <div class="a-card-tag" style="background:#1a3a8a;color:#fff;">INT</div>
+              <img src="img/planetroll.png" alt="Planet Roll" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">Restaurant</span>
+                <span>2023</span>
+              </div>
+              <div class="a-card-name"><em>Planet</em> Roll</div>
+              <div class="a-card-client">Planet Roll</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+          <a class="a-card" href="https://autovanthong.com/" target="_blank">
+            <div class="a-card-img">
+              <div class="a-card-num">Nº 13</div>
+              <div class="a-card-tag">🇻🇳 VN</div>
+              <img src="img/autovanthong.png" alt="Vạn Thông Auto" />
+            </div>
+            <div class="a-card-body">
+              <div class="a-card-meta">
+                <span class="type">E-commerce</span>
+                <span>2023</span>
+              </div>
+              <div class="a-card-name">Vạn Thông <em>Auto</em></div>
+              <div class="a-card-client">Vạn Thông Auto</div>
+              <div class="a-card-foot">
+                <span>View case</span>
+                <span class="visit">Visit ↗</span>
+              </div>
+            </div>
+          </a>
+
+        </div>
+        <div class="archive-progress" id="archProg"></div>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- ── LOGO WALL ── -->
+  <section class="logos-section" data-screen-label="06 Logos">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-num">[ 05 / Clients ]</div>
+        <div class="sec-title"><em>Brands</em> I've worked with.</div>
+        <div class="sec-aside">Vietnamese & international</div>
+      </div>
+    </div>
+    <div class="logos-strip">
+      <div class="logos-track">
+        <span class="logo-item"><em>Legendary</em></span>
+        <span class="logo-item"><span class="sans">NextGen</span></span>
+        <span class="logo-item"><em>Sanaky</em></span>
+        <span class="logo-item"><span class="mono">DAOTAOTINHOC</span></span>
+        <span class="logo-item"><span class="sans">Nhất Hùng Pharma</span></span>
+        <span class="logo-item"><em>VNet Media</em></span>
+        <span class="logo-item"><span class="mono">RL PATENTS</span></span>
+        <span class="logo-item"><span class="sans">EGAN</span></span>
+        <span class="logo-item"><em>TND Interior</em></span>
+        <span class="logo-item"><span class="mono">CAT CHUP</span></span>
+        <span class="logo-item"><span class="sans">Sailaza</span></span>
+        <span class="logo-item"><em>Planet Roll</em></span>
+        <span class="logo-item"><span class="sans">Vạn Thông Auto</span></span>
+        <!-- duplicate for seamless scroll -->
+        <span class="logo-item"><em>Legendary</em></span>
+        <span class="logo-item"><span class="sans">NextGen</span></span>
+        <span class="logo-item"><em>Sanaky</em></span>
+        <span class="logo-item"><span class="mono">DAOTAOTINHOC</span></span>
+        <span class="logo-item"><span class="sans">Nhất Hùng Pharma</span></span>
+        <span class="logo-item"><em>VNet Media</em></span>
+        <span class="logo-item"><span class="mono">RL PATENTS</span></span>
+        <span class="logo-item"><span class="sans">EGAN</span></span>
+        <span class="logo-item"><em>TND Interior</em></span>
+        <span class="logo-item"><span class="mono">CAT CHUP</span></span>
+        <span class="logo-item"><span class="sans">Sailaza</span></span>
+        <span class="logo-item"><em>Planet Roll</em></span>
+        <span class="logo-item"><span class="sans">Vạn Thông Auto</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STACK ── -->
+  <section id="stack" class="stack-section" data-screen-label="07 Stack">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-num">[ 06 / Stack ]</div>
+        <div class="sec-title">Tech <em>stack</em>.</div>
+        <div class="sec-aside">Tools I ship with</div>
+      </div>
+
+      <div class="stack-grid reveal">
+        <div class="stack-item">
+          <div class="s-icon">⚛</div>
+          <div class="s-name">React</div>
+          <div class="s-cat">Frontend</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">▲</div>
+          <div class="s-name">Next.js</div>
+          <div class="s-cat">Framework</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">TS</div>
+          <div class="s-name">TypeScript</div>
+          <div class="s-cat">Language</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">◈</div>
+          <div class="s-name">Tailwind</div>
+          <div class="s-cat">Styling</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">⬡</div>
+          <div class="s-name">Node.js</div>
+          <div class="s-cat">Backend</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">◎</div>
+          <div class="s-name">Express</div>
+          <div class="s-cat">Backend</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">🐘</div>
+          <div class="s-name">PostgreSQL</div>
+          <div class="s-cat">Database</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">🍃</div>
+          <div class="s-name">MongoDB</div>
+          <div class="s-cat">Database</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">⚡</div>
+          <div class="s-name">Supabase</div>
+          <div class="s-cat">BaaS</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">🔥</div>
+          <div class="s-name">Firebase</div>
+          <div class="s-cat">BaaS</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">◇</div>
+          <div class="s-name">GraphQL</div>
+          <div class="s-cat">API</div>
+        </div>
+        <div class="stack-item">
+          <div class="s-icon">🐳</div>
+          <div class="s-name">Docker</div>
+          <div class="s-cat">DevOps</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section id="faq" style="padding:0 0 80px" data-screen-label="08 FAQ">
+    <div class="wrap">
+      <div class="sec-head reveal">
+        <div class="sec-num">[ 07 / FAQ ]</div>
+        <div class="sec-title">Common <em>questions</em>.</div>
+        <div class="sec-aside">Before you reach out</div>
+      </div>
+
+      <div class="faq-list">
+
+        <div class="faq-item reveal">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="q-num">01</span>
+            <span class="q-text">How long does a <em>project</em> take?</span>
+            <span class="q-arrow">+</span>
+          </div>
+          <div class="faq-a">
+            <div></div>
+            <div class="a-body">It depends on scope. A landing page takes 1–2 weeks. A SaaS MVP with auth, billing and
+              core features takes 4–8 weeks. I always define a clear scope and timeline at the start so there are no
+              surprises.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal" style="transition-delay:.06s">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="q-num">02</span>
+            <span class="q-text">What's your <em>process</em>?</span>
+            <span class="q-arrow">+</span>
+          </div>
+          <div class="faq-a">
+            <div></div>
+            <div class="a-body">Discovery call → scoping & proposal → design (wireframes or Figma) → development in
+              short iterations → testing & QA → deployment. You get a working build to review after every iteration, not
+              a big reveal at the end.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal" style="transition-delay:.12s">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="q-num">03</span>
+            <span class="q-text">How much does it <em>cost</em>?</span>
+            <span class="q-arrow">+</span>
+          </div>
+          <div class="faq-a">
+            <div></div>
+            <div class="a-body">Pricing is project-based, not hourly. Every project is scoped individually — reach out
+              with a brief and I'll come back with a fixed-price proposal. No vague hourly estimates, no scope creep
+              surprises.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal" style="transition-delay:.18s">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="q-num">04</span>
+            <span class="q-text">Do you work with <em>international</em> clients?</span>
+            <span class="q-arrow">+</span>
+          </div>
+          <div class="faq-a">
+            <div></div>
+            <div class="a-body">Yes — I work fully remote with clients worldwide. Comfortable in English (TOEIC 880).
+              I'm UTC+7 and adapt my schedule for async or sync collaboration with European and US time zones.</div>
+          </div>
+        </div>
+
+        <div class="faq-item reveal" style="transition-delay:.24s">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            <span class="q-num">05</span>
+            <span class="q-text">What do you need to <em>get started</em>?</span>
+            <span class="q-arrow">+</span>
+          </div>
+          <div class="faq-a">
+            <div></div>
+            <div class="a-body">A brief description of what you want to build, who it's for, and your target timeline.
+              That's enough to have a productive first call. No need for a spec document upfront — we'll figure that out
+              together.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONTACT ── -->
+  <section id="contact" class="contact" data-screen-label="09 Contact">
+    <div class="wrap">
+      <div class="contact-grid reveal">
+        <div class="contact-left">
+          <div class="kicker">[ 08 / Contact ] — Open for projects</div>
+          <h2>Let's <em>build</em><br><span class="outline">together</span>.</h2>
+          <a class="mail" href="mailto:truongtandat1409@gmail.com">
+            truongtandat1409@gmail.com →
+          </a>
+        </div>
+        <div class="contact-right">
+          <div class="contact-fields">
+            <div class="cf">
+              <span class="cf-label">Location</span>
+              <span class="cf-val">Thu Duc, HCMC · Vietnam · UTC+7</span>
+            </div>
+            <div class="cf">
+              <span class="cf-label">Availability</span>
+              <span class="cf-val" style="color:var(--accent);">Available now · Q2 2026</span>
+            </div>
+            <div class="cf">
+              <span class="cf-label">Email</span>
+              <span class="cf-val"><a href="mailto:truongtandat1409@gmail.com">truongtandat1409@gmail.com</a></span>
+            </div>
+            <div class="cf">
+              <span class="cf-label">Phone</span>
+              <span class="cf-val"><a href="tel:+84934462524">+84 934 462 524</a></span>
+            </div>
+            <div class="cf">
+              <span class="cf-label">LinkedIn</span>
+              <span class="cf-val"><a href="https://www.linkedin.com/in/truongtandat/" target="_blank">in/truongtandat
+                  ↗</a></span>
+            </div>
+            <div class="cf">
+              <span class="cf-label">Pricing</span>
+              <span class="cf-val">Contact for quote</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 — Truong Tan Dat</span>
+        <span>Web App Developer · Freelance</span>
+        <span>Built in HCMC · <span style="color:var(--accent);">Open for work</span></span>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // ── CLOCK ──
+    (function tick() {
+      const pad = n => String(n).padStart(2, '0');
+      const el = document.getElementById('clock');
+      const d = new Date();
+      if (el) el.textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+      setTimeout(tick, 1000);
+    })();
+
+    // ── CURSOR ──
+    const dot = document.getElementById('cDot');
+    const ring = document.getElementById('cRing');
+    let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+    window.addEventListener('pointermove', e => {
+      mx = e.clientX; my = e.clientY;
+      dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
+    });
+    (function raf() {
+      rx += (mx - rx) * .15; ry += (my - ry) * .15;
+      ring.style.transform = `translate(${rx}px,${ry}px) translate(-50%,-50%)`;
+      requestAnimationFrame(raf);
+    })();
+    window.addEventListener('pointerdown', () => ring.classList.add('press'));
+    window.addEventListener('pointerup', () => ring.classList.remove('press'));
+    document.querySelectorAll('a,button,.service-card,.work-item,.faq-q,.stack-item').forEach(el => {
+      el.addEventListener('mouseenter', () => ring.classList.add('hover'));
+      el.addEventListener('mouseleave', () => ring.classList.remove('hover'));
+    });
+
+    // ── SCROLL REVEAL ──
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); } });
+    }, { threshold: .1 });
+    document.querySelectorAll('.reveal,.line-clip').forEach(el => io.observe(el));
+
+    // ── ARCHIVE RAIL ──
+    (function () {
+      const rail = document.getElementById('archRail');
+      const prog = document.getElementById('archProg');
+      const prev = document.getElementById('archPrev');
+      const next = document.getElementById('archNext');
+      if (!rail) return;
+      const step = 380;
+      prev && prev.addEventListener('click', () => rail.scrollBy({ left: -step, behavior: 'smooth' }));
+      next && next.addEventListener('click', () => rail.scrollBy({ left: step, behavior: 'smooth' }));
+      function update() {
+        const max = rail.scrollWidth - rail.clientWidth;
+        const p = max > 0 ? (rail.scrollLeft / max) * 100 : 0;
+        prog && prog.style.setProperty('--prog', Math.max(8, p) + '%');
+      }
+      rail.addEventListener('scroll', update, { passive: true });
+      update();
+      // drag-to-scroll
+      let down = false, startX = 0, startLeft = 0;
+      rail.addEventListener('pointerdown', e => {
+        if (e.target.closest('a')) return;
+        down = true; startX = e.clientX; startLeft = rail.scrollLeft; rail.style.cursor = 'grabbing';
+      });
+      window.addEventListener('pointerup', () => { down = false; rail.style.cursor = ''; });
+      window.addEventListener('pointermove', e => {
+        if (!down) return;
+        rail.scrollLeft = startLeft - (e.clientX - startX);
+      });
+      // arrow keys when archive in view
+      window.addEventListener('keydown', e => {
+        const r = rail.getBoundingClientRect();
+        if (r.top > innerHeight || r.bottom < 0) return;
+        if (e.key === 'ArrowLeft') rail.scrollBy({ left: -step, behavior: 'smooth' });
+        if (e.key === 'ArrowRight') rail.scrollBy({ left: step, behavior: 'smooth' });
+      });
+    })();
+
+    // ── STAT COUNT-UP ──
+    const statIO = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        const el = e.target;
+        const target = parseInt(el.dataset.count, 10);
+        const dur = 1400;
+        const start = performance.now();
+        function step(t) {
+          const p = Math.min(1, (t - start) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.floor(eased * target);
+          if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+        statIO.unobserve(el);
+      });
+    }, { threshold: .4 });
+    document.querySelectorAll('[data-count]').forEach(el => statIO.observe(el));
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.querySelectorAll('.hero .line-clip').forEach((el, i) => {
+          setTimeout(() => el.classList.add('in'), i * 140);
+        });
+      }, 300);
+    });
+
+    // ── FAQ TOGGLE ──
+    function toggleFaq(btn) {
+      const item = btn.closest('.faq-item');
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+      if (!isOpen) item.classList.add('open');
+    }
+
+    // ── PAGE TRANSITION ──
+    const curtain = document.getElementById('curtain');
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        const href = a.getAttribute('href');
+        if (!href || href === '#') return;
+        const target = document.querySelector(href);
+        if (!target) return;
+        e.preventDefault();
+        curtain.classList.add('show');
+        setTimeout(() => {
+          const top = target.getBoundingClientRect().top + window.scrollY - 70;
+          window.scrollTo({ top, behavior: 'instant' });
+          curtain.classList.remove('show');
+          curtain.classList.add('hide');
+          setTimeout(() => { curtain.classList.remove('hide'); }, 800);
+        }, 580);
+      });
+    });
+
+    // Intro loader: count 0 → 100 then slide up
+    window.addEventListener('load', () => {
+      const intro = document.getElementById('intro');
+      const counter = document.getElementById('introCount');
+      let n = 0;
+      const total = 1800;
+      const start = performance.now();
+      function step(t) {
+        const p = Math.min(1, (t - start) / total);
+        n = Math.floor(p * 100);
+        if (counter) counter.textContent = String(n).padStart(3, '0');
+        if (p < 1) requestAnimationFrame(step);
+        else {
+          setTimeout(() => {
+            intro.classList.add('gone');
+            setTimeout(() => intro.remove(), 1000);
+          }, 250);
+        }
+      }
+      requestAnimationFrame(step);
+    });
+  </script>
+</body>
+
+</html>
