@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 
 <head>
@@ -539,6 +539,96 @@
     .hero-cell .cta-ghost:hover {
       color: var(--paper);
       border-color: var(--paper);
+    }
+
+    /* ── GLOBE ── */
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      gap: 0;
+      align-items: center;
+      min-height: 520px;
+    }
+
+    .hero-text {
+      flex: 1;
+    }
+
+    .globe-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 480px;
+      height: 480px;
+      flex-shrink: 0;
+    }
+
+    .globe-wrap canvas {
+      display: block;
+      cursor: grab;
+      border-radius: 50%;
+      box-shadow:
+        0 0 80px rgba(107, 140, 255, .25),
+        0 0 160px rgba(107, 140, 255, .10),
+        inset 0 0 40px rgba(107, 140, 255, .08);
+      transition: box-shadow .3s;
+    }
+
+    .globe-wrap canvas:active {
+      cursor: grabbing;
+    }
+
+    .globe-wrap canvas:hover {
+      box-shadow:
+        0 0 100px rgba(107, 140, 255, .38),
+        0 0 200px rgba(107, 140, 255, .15),
+        inset 0 0 60px rgba(107, 140, 255, .12);
+    }
+
+    .globe-hint {
+      position: absolute;
+      bottom: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--dim);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: .7;
+    }
+
+    .globe-hint::before {
+      content: '';
+      width: 14px;
+      height: 1px;
+      background: var(--accent);
+      display: inline-block;
+    }
+
+    @media (max-width: 1100px) {
+      .hero-inner {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .globe-wrap {
+        width: 360px;
+        height: 360px;
+        margin: 48px auto 32px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .globe-wrap {
+        width: 280px;
+        height: 280px;
+      }
     }
 
     /* ── MARQUEE ── */
@@ -1746,40 +1836,53 @@
 
   <!-- ── HERO ── -->
   <section class="hero" data-screen-label="01 Hero">
+
     <div class="wrap">
-      <div class="hero-eyebrow">
-        <span class="accent">[&nbsp;Available for projects&nbsp;]</span>
-        <span class="tick"></span>
-        <span>Freelance · 2026</span>
-        <span class="tick"></span>
-        <span>Web Apps · SaaS · E-commerce</span>
-      </div>
+      <div class="hero-inner">
+        <div class="hero-text">
+          <div class="hero-eyebrow">
+            <span class="accent">[ Available for projects ]</span>
+            <span class="tick"></span>
+            <span>Freelance · 2026</span>
+            <span class="tick"></span>
+            <span>Web Apps · SaaS · E-commerce</span>
+          </div>
 
-      <h1 class="hero-title">
-        <span class="line-clip"><span>I build</span></span>
-        <span class="line-clip"><span><em>web apps</em></span></span>
-        <span class="line-clip"><span>that <span class="green">ship</span><span class="outline">.</span></span></span>
-      </h1>
+          <h1 class="hero-title">
+            <span class="line-clip"><span>I build</span></span>
+            <span class="line-clip"><span><em>web apps</em></span></span>
+            <span class="line-clip"><span>that <span class="green">ship</span><span
+                  class="outline">.</span></span></span>
+          </h1>
 
-      <div class="hero-bottom">
-        <div class="hero-cell">
-          <div class="label">[ Who I am ]</div>
-          <p>Truong Tan Dat — full-stack web developer based in Ho Chi Minh City. I help startups and businesses turn
-            ideas into production-ready web applications.</p>
+          <div class="hero-bottom">
+            <div class="hero-cell">
+              <div class="label">[ Who I am ]</div>
+              <p>Truong Tan Dat — full-stack web developer based in Ho Chi Minh City. I help startups and businesses
+                turn
+                ideas into production-ready web applications.</p>
+            </div>
+            <div class="hero-cell">
+              <div class="label">[ What I build ]</div>
+              <p>Landing pages, SaaS MVPs, dashboards, e-commerce platforms. From concept to deployment — React,
+                Next.js,
+                Node.js, and everything in between.</p>
+            </div>
+            <div class="hero-cell">
+              <div class="label">[ Start here ]</div>
+              <a class="cta-btn" href="#work">View my work →</a>
+              <a class="cta-ghost" href="#contact">Let's talk</a>
+            </div>
+          </div>
         </div>
-        <div class="hero-cell">
-          <div class="label">[ What I build ]</div>
-          <p>Landing pages, SaaS MVPs, dashboards, e-commerce platforms. From concept to deployment — React, Next.js,
-            Node.js, and everything in between.</p>
-        </div>
-        <div class="hero-cell">
-          <div class="label">[ Start here ]</div>
-          <a class="cta-btn" href="#work">View my work →</a>
-          <a class="cta-ghost" href="#contact">Let's talk</a>
+
+        <!-- 3D Interactive Globe -->
+        <div class="globe-wrap">
+          <canvas id="globeCanvas" width="480" height="480"></canvas>
+          <div class="globe-hint">Drag to rotate</div>
         </div>
       </div>
     </div>
-
     <div class="marquee">
       <div class="marquee-track">
         <span class="item">Next.js <span class="dot"></span></span>
@@ -2496,6 +2599,8 @@
     </div>
   </section>
 
+  <!-- Needed for converting world-atlas TopoJSON -> GeoJSON features -->
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
   <script>
     // ── CLOCK ──
     (function tick() {
@@ -2645,6 +2750,232 @@
       }
       requestAnimationFrame(step);
     });
+
+    // â”€â”€ 3D GLOBE (real country shapes) â”€â”€
+    (function () {
+      const canvas = document.getElementById('globeCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      // Start flipped 180° so the globe isn't upside-down
+      let rotX = Math.PI + 0.3, rotY = 0;
+      let velX = 0, velY = 0.003;
+      let isDragging = false;
+      let lastMX = 0, lastMY = 0;
+      let worldFeatures = null;
+
+      function resizeCanvas() {
+        const wrap = canvas.parentElement;
+        const s = Math.min(wrap.offsetWidth, wrap.offsetHeight, 480);
+        canvas.width = s;
+        canvas.height = s;
+      }
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+
+      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+        .then(r => r.json())
+        .then(world => {
+          if (typeof topojson !== 'undefined') {
+            worldFeatures = topojson.feature(world, world.objects.countries).features;
+          }
+        })
+        .catch(() => {});
+
+      function project(lat, lng, R) {
+        const phi = (90 - lat) * Math.PI / 180;
+        const theta = lng * Math.PI / 180 + rotY;
+        let x = R * Math.sin(phi) * Math.cos(theta);
+        let y = R * Math.cos(phi);
+        let z = R * Math.sin(phi) * Math.sin(theta);
+        const cosRX = Math.cos(rotX), sinRX = Math.sin(rotX);
+        return {
+          x, y: y * cosRX - z * sinRX,
+          z: y * sinRX + z * cosRX
+        };
+      }
+
+      function drawRing(ring, R, CX, CY) {
+        if (!ring || ring.length < 2) return false;
+        let hasVis = false;
+        ctx.beginPath();
+        let penDown = false, prevVis = false;
+        for (let i = 0; i < ring.length; i++) {
+          const p = project(ring[i][1], ring[i][0], R);
+          const vis = p.z > -R * 0.05;
+          if (vis) hasVis = true;
+          if (vis) {
+            if (!penDown || !prevVis) { ctx.moveTo(CX + p.x, CY + p.y); penDown = true; }
+            else ctx.lineTo(CX + p.x, CY + p.y);
+          }
+          prevVis = vis;
+        }
+        return hasVis;
+      }
+
+      function drawGlobe() {
+        const W = canvas.width, H = canvas.height;
+        const CX = W / 2, CY = H / 2;
+        const R = W * 0.44;
+
+        ctx.clearRect(0, 0, W, H);
+
+        // Atmosphere glow
+        const atmo = ctx.createRadialGradient(CX, CY, R * 0.85, CX, CY, R * 1.18);
+        atmo.addColorStop(0, 'rgba(80,120,255,0)');
+        atmo.addColorStop(0.6, 'rgba(100,140,255,0.12)');
+        atmo.addColorStop(1, 'rgba(107,140,255,0.30)');
+        ctx.beginPath(); ctx.arc(CX, CY, R * 1.18, 0, Math.PI * 2);
+        ctx.fillStyle = atmo; ctx.fill();
+
+        // Ocean
+        const ocean = ctx.createRadialGradient(CX - R * 0.25, CY - R * 0.25, R * 0.02, CX, CY, R);
+        ocean.addColorStop(0, '#1b2f6a');
+        ocean.addColorStop(0.55, '#0c1a3e');
+        ocean.addColorStop(1, '#060d1f');
+        ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2);
+        ctx.fillStyle = ocean; ctx.fill();
+
+        // Clip to sphere
+        ctx.save();
+        ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2); ctx.clip();
+
+        // Country shapes
+        if (worldFeatures) {
+          for (const feature of worldFeatures) {
+            const geom = feature.geometry;
+            if (!geom) continue;
+            const polys = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+            for (const poly of polys) {
+              if (drawRing(poly[0], R, CX, CY)) {
+                ctx.fillStyle = 'rgba(36, 64, 130, 0.88)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(107, 155, 255, 0.60)';
+                ctx.lineWidth = 0.6;
+                ctx.stroke();
+              }
+            }
+          }
+        }
+
+        // Graticule grid
+        ctx.lineWidth = 0.35; ctx.strokeStyle = 'rgba(107,140,255,0.13)';
+        for (let lat = -75; lat <= 75; lat += 15) {
+          ctx.beginPath(); let pen = false;
+          for (let lng = -180; lng <= 180; lng += 2) {
+            const p = project(lat, lng, R);
+            if (p.z > -R * 0.05) { if (!pen) { ctx.moveTo(CX+p.x,CY+p.y); pen=true; } else ctx.lineTo(CX+p.x,CY+p.y); }
+            else pen = false;
+          }
+          ctx.stroke();
+        }
+        for (let lng = -180; lng < 180; lng += 20) {
+          ctx.beginPath(); let pen = false;
+          for (let lat = -90; lat <= 90; lat += 2) {
+            const p = project(lat, lng, R);
+            if (p.z > -R * 0.05) { if (!pen) { ctx.moveTo(CX+p.x,CY+p.y); pen=true; } else ctx.lineTo(CX+p.x,CY+p.y); }
+            else pen = false;
+          }
+          ctx.stroke();
+        }
+
+        // Equator
+        ctx.beginPath(); ctx.strokeStyle = 'rgba(107,160,255,0.45)'; ctx.lineWidth = 0.9;
+        let pen = false;
+        for (let lng = -180; lng <= 180; lng += 2) {
+          const p = project(0, lng, R);
+          if (p.z > -R * 0.05) { if (!pen) { ctx.moveTo(CX+p.x,CY+p.y); pen=true; } else ctx.lineTo(CX+p.x,CY+p.y); }
+          else pen = false;
+        }
+        ctx.stroke();
+
+        ctx.restore();
+
+        // Specular highlight (top-left light)
+        const spec = ctx.createRadialGradient(CX-R*0.4, CY-R*0.42, 0, CX-R*0.2, CY-R*0.2, R*0.7);
+        spec.addColorStop(0, 'rgba(220,235,255,0.20)');
+        spec.addColorStop(0.5, 'rgba(150,180,255,0.05)');
+        spec.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2); ctx.fillStyle = spec; ctx.fill();
+
+        // Edge vignette
+        const edge = ctx.createRadialGradient(CX, CY, R*0.62, CX, CY, R);
+        edge.addColorStop(0, 'rgba(0,0,0,0)');
+        edge.addColorStop(1, 'rgba(0,0,20,0.72)');
+        ctx.beginPath(); ctx.arc(CX, CY, R, 0, Math.PI * 2); ctx.fillStyle = edge; ctx.fill();
+
+        // City markers
+        const cities = [
+          [10.8, 106.7, 'HCMC'], [21.0, 105.8, 'Hanoi'],
+          [35.7, 139.7, 'Tokyo'], [37.8, -122.4, 'SF'],
+          [51.5, -0.1, 'London'], [48.9, 2.3, 'Paris'],
+          [40.7, -74.0, 'NYC'], [-33.9, 151.2, 'Sydney'],
+          [1.4, 103.8, 'SG'], [28.6, 77.2, 'Delhi'],
+        ];
+        for (const [lat, lng, label] of cities) {
+          const p = project(lat, lng, R);
+          if (p.z < 0) continue;
+          const sx = CX + p.x, sy = CY + p.y;
+          const depth = (p.z + R) / (2 * R);
+          const alpha = 0.45 + depth * 0.55;
+          const dr = (2.2 + depth * 2) * (W / 480);
+          ctx.beginPath(); ctx.arc(sx, sy, dr * 2.8, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(120,180,255,${alpha * 0.3})`; ctx.lineWidth = 0.8; ctx.stroke();
+          const dg = ctx.createRadialGradient(sx-dr*0.3, sy-dr*0.3, 0, sx, sy, dr);
+          dg.addColorStop(0, `rgba(220,235,255,${alpha})`);
+          dg.addColorStop(1, `rgba(107,150,255,${alpha})`);
+          ctx.beginPath(); ctx.arc(sx, sy, dr, 0, Math.PI * 2);
+          ctx.fillStyle = dg; ctx.fill();
+          if (depth > 0.52) {
+            ctx.fillStyle = `rgba(200,220,255,${Math.min(1,(depth-0.52)*2.5)*alpha})`;
+            ctx.font = `bold ${Math.round(9*W/480)}px "JetBrains Mono",monospace`;
+            ctx.fillText(label, sx + dr * 2 + 2, sy + 3.5);
+          }
+        }
+      }
+
+      function animate() {
+        if (!isDragging) {
+          rotY += velY; rotX += velX;
+          velX *= 0.94;
+          rotX = Math.max(-Math.PI, Math.min(Math.PI, rotX));
+        }
+        drawGlobe();
+        requestAnimationFrame(animate);
+      }
+      animate();
+
+      canvas.addEventListener('mousedown', e => {
+        isDragging = true; lastMX = e.clientX; lastMY = e.clientY; velX = 0; velY = 0;
+      });
+      window.addEventListener('mousemove', e => {
+        if (!isDragging) return;
+        velY = (e.clientX - lastMX) * 0.008; velX = (e.clientY - lastMY) * 0.008;
+        rotY += velY; rotX += velX; rotX = Math.max(-Math.PI, Math.min(Math.PI, rotX));
+        lastMX = e.clientX; lastMY = e.clientY;
+      });
+      window.addEventListener('mouseup', () => {
+        isDragging = false;
+        setTimeout(() => { velY = velY * 0.3 + 0.003; velX *= 0.1; }, 300);
+      });
+      canvas.addEventListener('touchstart', e => {
+        if (e.touches.length === 1) {
+          isDragging = true; lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY;
+          velX = 0; velY = 0; e.preventDefault();
+        }
+      }, { passive: false });
+      window.addEventListener('touchmove', e => {
+        if (!isDragging || e.touches.length !== 1) return;
+        velY = (e.touches[0].clientX - lastMX) * 0.008;
+        velX = (e.touches[0].clientY - lastMY) * 0.008;
+        rotY += velY; rotX += velX; rotX = Math.max(-Math.PI, Math.min(Math.PI, rotX));
+        lastMX = e.touches[0].clientX; lastMY = e.touches[0].clientY; e.preventDefault();
+      }, { passive: false });
+      window.addEventListener('touchend', () => {
+        isDragging = false;
+        setTimeout(() => { velY = velY * 0.3 + 0.003; velX *= 0.1; }, 300);
+      });
+    })();
   </script>
 </body>
 
